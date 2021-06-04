@@ -7,6 +7,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <utility>
+#include <optional>
 
 template <
     typename Key,
@@ -19,12 +20,13 @@ public:
     using key_type = Key;
     using mapped_type = Value;
     using value_type = std::pair<const key_type, mapped_type>;
-    using ref_wrapped_key_type = std::reference_wrapper<const Key>;
+    using key_type_ref = std::reference_wrapper<const Key>;
+    using mapped_type_ref = std::reference_wrapper<mapped_type>;
     using hash_type = Hash;
     using list_type = std::list<value_type>;
     using iterator = typename list_type::iterator;
     using const_iterator = typename list_type::const_iterator;
-    using map_type = std::unordered_map<ref_wrapped_key_type, iterator, Hash, Eq>;
+    using map_type = std::unordered_map<key_type_ref, iterator, Hash, Eq>;
 
     explicit lru(std::size_t capacity) :
         _capacity(capacity)
@@ -108,6 +110,30 @@ public:
 
         func(iter->second);
         return true;
+    }
+
+    std::optional<mapped_type_ref> get(const key_type& key)
+    {
+        auto iterator = _map.find(std::cref(key));
+        if (iterator == _map.end())
+        {
+            return std::nullopt;
+        }
+
+        _promote(iterator->second);
+        return { std::ref(iterator->second->second) };
+    }
+
+    std::optional<mapped_type> get_copy(const key_type& key)
+    {
+        auto iterator = _map.find(std::cref(key));
+        if (iterator == _map.end())
+        {
+            return std::nullopt;
+        }
+
+        _promote(iterator->second);
+        return { iterator->second->second };
     }
 
     void clear() noexcept

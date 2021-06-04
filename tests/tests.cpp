@@ -1,4 +1,4 @@
-#include "lru.h"
+#include "include/lru.h"
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
@@ -173,6 +173,42 @@ TEST_CASE("Insertion", "[insertion]")
         auto iter = custom_lru.find(test2);
         REQUIRE(iter != custom_lru.end());
         REQUIRE(iter->second == 20);
+    }
+}
+
+TEST_CASE("Get", "[Get]")
+{
+    lru<std::string, std::string> cache(2);
+    cache.insert(keys[0], values[0]);
+
+    SECTION("Happy Flow")
+    {
+        SECTION("get")
+        {
+            auto val = cache.get(keys[0]);
+            REQUIRE(val.has_value());
+        }
+
+        SECTION("get_copy")
+        {
+            auto val = cache.get_copy(keys[0]);
+            REQUIRE(val.has_value());
+        }
+    }
+
+    SECTION("Invalid Value")
+    {
+        SECTION("get")
+        {
+            auto val = cache.get("non-existent");
+            REQUIRE(!val.has_value());
+        }
+
+        SECTION("get_copy")
+        {
+            auto val = cache.get_copy("non-existent");
+            REQUIRE(!val.has_value());
+        }
     }
 }
 
