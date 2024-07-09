@@ -220,24 +220,18 @@ TEST_CASE("Update", "[update]")
 
     SECTION("try_update")
     {
-        cache.try_update(keys[0],
-            [&](std::string& value)
-            {
-                value = new_value;
-            }
-        );
+        cache.try_update(keys[0], [&](std::string& value) {
+            value = new_value;
+        });
     }
 
     SECTION("for_each")
     {
         CHECK(cache.insert(keys[1], values[1]));
 
-        cache.for_each(
-            [&](auto& pair)
-            {
-                pair.second = new_value;
-            }
-        );
+        cache.for_each([&](auto& pair) {
+            pair.second = new_value;
+        });
     }
 
     for (auto& [__, value] : cache)
